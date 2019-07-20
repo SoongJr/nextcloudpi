@@ -77,16 +77,6 @@ find etc -maxdepth 1 -type f ! -path etc/ncp.cfg -exec cp '{}' /usr/local/etc \;
 EOF
 cp -n etc/ncp.cfg /usr/local/etc
 
-# update NCVER in ncp.cfg and nc-nextcloud.cfg (for nc-autoupdate-nc and nc-update-nextcloud)
-nc_version=$(jq -r .nextcloud_version < etc/ncp.cfg)
-cfg="$(jq '.' /usr/local/etc/ncp.cfg)"
-cfg="$(jq ".nextcloud_version = \"$nc_version\"" <<<"$cfg")"
-echo "$cfg" > /usr/local/etc/ncp.cfg
-
-cfg="$(jq '.' etc/ncp-config.d/nc-nextcloud.cfg)"
-cfg="$(jq ".params[0].value = \"$nc_version\"" <<<"$cfg")"
-echo "$cfg" > /usr/local/etc/ncp-config.d/nc-nextcloud.cfg
-
 # install new entries of ncp-config and update others
 for file in etc/ncp-config.d/*; do
   [ -f "$file" ] || continue;    # skip dirs
@@ -118,6 +108,16 @@ for file in etc/ncp-config.d/*; do
   cp "$file" /usr/local/"$file"
 
 done
+
+# update NCVER in ncp.cfg and nc-nextcloud.cfg (for nc-autoupdate-nc and nc-update-nextcloud)
+nc_version=$(jq -r .nextcloud_version < etc/ncp.cfg)
+cfg="$(jq '.' /usr/local/etc/ncp.cfg)"
+cfg="$(jq ".nextcloud_version = \"$nc_version\"" <<<"$cfg")"
+echo "$cfg" > /usr/local/etc/ncp.cfg
+
+cfg="$(jq '.' etc/ncp-config.d/nc-nextcloud.cfg)"
+cfg="$(jq ".params[0].value = \"$nc_version\"" <<<"$cfg")"
+echo "$cfg" > /usr/local/etc/ncp-config.d/nc-nextcloud.cfg
 
 # install localization files
 cp -rT etc/ncp-config.d/l10n "$CONFDIR"/l10n
